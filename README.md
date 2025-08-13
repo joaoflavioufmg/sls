@@ -41,13 +41,43 @@ Learn to design, build, and validate **Discrete-Event Simulation (DES)** models 
 - Python **3.10+**  
 - Recommended: `venv` for isolation
 
-### Setup
-```bash
-# create and activate a virtual environment
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
+### Installation Steps
 
-# install dependencies
-pip install simpy numpy pandas matplotlib
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd sls
+   ```
+
+2. **Create virtual environment**
+   ```bash
+   py -m venv venv
+   ```
+
+3. **Activate virtual environment**
+   
+   **Windows:**
+   ```bash
+   venv\Scripts\activate.ps1
+   ```
+   
+   **Linux/Mac:**
+   ```bash
+   source venv/bin/activate
+   ```
+
+4. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Usage
+
+### Running the Complete Analysis
+
+Execute the full simulation across all scenarios:
+
+```bash
+> cd .\01\ 
+> py <python-file.py>
+```
