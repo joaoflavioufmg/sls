@@ -1,0 +1,17 @@
+1  : $ python file_read.py 
+2  : V. ad Lesbiam
+3  : 
+4  : VIVAMUS mea Lesbia, atque amemus,
+5  : rumoresque senum severiorum
+6  : omnes unius aestimemus assis!
+7  : soles occidere et redire possunt:
+8  : nobis cum semel occidit breuis lux,
+9  : nox est perpetua una dormienda.
+10 : da mi basia mille, deinde centum,
+11 : dein mille altera, dein secunda centum,
+12 : deinde usque altera mille, deinde centum.
+13 : dein, cum milia multa fecerimus,
+14 : conturbabimus illa, ne sciamus,
+15 : aut ne quis malus inuidere possit,
+16 : cum tantum sciat esse basiorum.
+17 : (GAIUS VALERIUS CATULLUS)

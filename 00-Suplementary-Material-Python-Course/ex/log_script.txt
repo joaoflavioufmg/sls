@@ -1,0 +1,6 @@
+hi
+Hello world
+
+
+------------------
+(program exited with code: 0)
