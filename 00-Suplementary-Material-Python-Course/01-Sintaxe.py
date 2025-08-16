@@ -6,6 +6,10 @@
 #   "python.defaultInterpreterPath": ".\\venv\\Scripts\\python.exe"  
 # }
 
+# Para rodar apenas uma parte do código: 
+# (ative o ipython): > ipython (Enter)
+# Selecione as linhas do código + SHIF + ENTER
+
 # Fontes:
 # https://www.python.org/dev/peps/pep-0263/
 # https://www.python-course.eu/python3_interactive.php
