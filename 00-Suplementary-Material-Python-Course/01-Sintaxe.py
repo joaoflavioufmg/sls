@@ -1,5 +1,11 @@
-# !/usr/bin/python3.4
-# -*- coding: utf-8 -*-
+# Cursor (ou VSCode): 
+# Ctrl+Shift+P → type Preferences: Open Settings (JSON).
+
+# {
+#   "python.terminal.launchArgs": ["-m", "IPython"],
+#   "python.defaultInterpreterPath": ".\\venv\\Scripts\\python.exe"  
+# }
+
 # Fontes:
 # https://www.python.org/dev/peps/pep-0263/
 # https://www.python-course.eu/python3_interactive.php
@@ -161,7 +167,7 @@ for i in l:
 
 idade = 17
 nome = 'Joao'
-disciplina = "EPD048"
+disciplina = "Simulação de Sistemas Logísticos"
 
 # Para mais de um {} eh preciso numera-lo...
 print("{0} tinha {1} anos quando entrou \
