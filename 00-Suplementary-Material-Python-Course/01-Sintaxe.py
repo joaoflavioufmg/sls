@@ -1,6 +1,7 @@
 # Cursor (ou VSCode): 
-# Ctrl+Shift+P → type Preferences: Open Settings (JSON).
+# Ctrl+Shift+P → (Digite) Preferences: Open User Settings (JSON).
 
+# (Adicione ao arquivo settings.json)
 # {
 #   "python.terminal.launchArgs": ["-m", "IPython"],
 #   "python.defaultInterpreterPath": ".\\venv\\Scripts\\python.exe"  
