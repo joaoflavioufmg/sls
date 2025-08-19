@@ -1,5 +1,8 @@
 # Distribution Fitting Tool
 
+Course: EPD899: Simulacao de Sistemas Logísticos 
+Prof: João Flávio de Freitas Almeida (PPGEP-UFMG)
+
 A Python tool for fitting probability distributions to empirical data using statistical tests. This tool helps identify the best-fitting probability distribution from a set of common distributions and provides Python code for generating random numbers from the fitted distribution.
 
 ## Features
@@ -338,7 +341,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Based on work from EPD045: Simulacao por Eventos Discretos course
+- Based on work from EPD899: Simulacao de Sistemas Logísticos course
+- Prof. João Flávio de Freitas Almeida (PPGEP-UFMG)
 - Uses SciPy for statistical distributions and tests
 - Matplotlib for visualization
 - Pandas for data handling
