@@ -26,7 +26,7 @@ yu = [i / myInt for i in y]
 xu = [i / myInt for i in x]
 
 fig, ax = plt.subplots()
-ax.set_title('Geração de números aleatórios: Exemplo 1 (Pidd)')
+ax.set_title(f'Geração de números aleatórios ({N} dados): Exemplo 1 (Pidd)')
 ax.grid(True)
 fig.tight_layout()
 plt.scatter(xu, yu, alpha=0.5)
@@ -55,7 +55,7 @@ yu = [i / myInt for i in y]
 xu = [i / myInt for i in x]
 
 fig, ax = plt.subplots()
-ax.set_title('Geração de números aleatórios: Exemplo 2 (Pidd)')
+ax.set_title(f'Geração de números aleatórios ({N} dados): Exemplo 2 (Pidd)')
 ax.grid(True)
 fig.tight_layout()
 plt.scatter(xu, yu, alpha=0.5)
@@ -76,7 +76,7 @@ y = np.random.rand(N)
 # print("x: ", x)
 
 fig, ax = plt.subplots()
-ax.set_title('Geração de números aleatórios: Biblioteca Numpy (Python)')
+ax.set_title(f'Geração de números aleatórios ({N} dados): Biblioteca Numpy (Python)')
 ax.grid(True)
 fig.tight_layout()
 plt.scatter(x, y, alpha=0.5)
