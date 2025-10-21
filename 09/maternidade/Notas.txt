@@ -1,0 +1,39 @@
+========== Notas ==========
+Ajustar o DCA para que ambos, DCA e Modelo, fiquem equivalentes.
+
+Sobre os dados:
+	Número de atividades diferente da simulação. O DCA possui 12 atividades,
+	mas foi coletado dados de apenas 2 atividades.
+	
+	A amostra é muito pequena. Se possível, aumentar a amostra.
+	Ainda assim, os tempos das 2 amostras não foi inserido no modelo. 
+
+Apresentar o passo-a-passo da simulação, ou seja, os eventos, alinhado ao DCA.
+Ainda no passo-a-passo: 
+	Computar as filas: 
+		Número em filas
+		Tempo em filas
+	Computar atendimento:
+		Número em atendimento
+		Tempo de atendimento
+		
+	Uma parte do código "esgotou reavaliações - recebe alta" não está sendo usada.
+		
+Ao término da simulação:
+	Adicionar mais algumas as estatísticas:
+		Número médio de pacientes no sistema
+		Número médio de pacientes em fila para cada recurso
+		Utilização média de cada recurso: Percentual (%)
+		
+Parece que tem um "bug" no código: 
+
+Exception ignored in: <generator object gestante at 0x0000014AE03768E0>
+RuntimeError: generator ignored GeneratorExit
+
+Apresentar as estatísticas em gráficos.
+
+=============================================================================
+Esta foi apenas uma replicação. Uma simulação contém diversas replicações!
+Implementar a simulação computando as médias das replicações e, ao final da 
+simulação, computar as médias das médias das replicações.
+=============================================================================

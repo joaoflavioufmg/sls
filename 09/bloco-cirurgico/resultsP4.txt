@@ -1,0 +1,81 @@
+
+Distribution Fitting Summary Report
+==================================================
+
+Data Statistics:
+- Sample size: 281
+- Mean: 72.1993
+- Std Dev: 169.5816
+- Min: 0.0000
+- Max: 770.0000
+
+Best Fitting Distribution: norm
+- Parameters: loc=72.199, scale=169.280
+- P-value: 0.0000
+- Significant at α=0.05: No
+
+Python Random Code:
+random.gauss(72.199, 169.280)
+
+Top 3 Distributions by P-value:
+1. norm: p-value = 0.0000 (Significant: No)
+2. lognorm: p-value = 0.0000 (Significant: No)
+3. weibull_max: p-value = 0.0000 (Significant: No)
+
+
+Detailed Results:
+--------------------------------------------------------------------------------
+1. norm
+   Parameters: loc=72.1993, scale=169.2796
+   P-value: 0.000000
+   Statistic: 0.504989
+   Python code: random.gauss(72.199, 169.280)
+
+2. lognorm
+   Parameters: s=275.2496, loc=-0.0000, scale=0.0000
+   P-value: 0.000000
+   Statistic: 0.508681
+   Python code: random.lognormvariate(-0.000, 0.000)
+
+3. weibull_max
+   Parameters: c=0.1310, loc=770.0000, scale=1.7908
+   P-value: 0.000000
+   Statistic: 0.836447
+   Python code: random.weibullvariate(1.791, 770.000)
+
+4. beta
+   Parameters: a=0.1123, b=0.6277, loc=-0.0000, scale=940.1180
+   P-value: 0.000000
+   Statistic: 0.839538
+   Python code: random.betavariate(0.112, 0.628)
+
+5. gamma
+   Parameters: a=0.1813, loc=-0.0000, scale=95.7301
+   P-value: 0.000000
+   Statistic: 0.839846
+   Python code: random.gammavariate(0.181, 0.010)
+
+6. triang
+   Parameters: c=0.0000, loc=-0.0000, scale=776.9750
+   P-value: 0.000000
+   Statistic: 0.839858
+   Python code: random.triangular(-0.000, 776.975, -0.000)
+
+7. weibull_min
+   Parameters: c=0.3631, loc=-0.0000, scale=82.3697
+   P-value: 0.000000
+   Statistic: 0.839858
+   Python code: random.weibullvariate(82.370, -0.000)
+
+8. uniform
+   Parameters: loc=0.0000, scale=770.0000
+   P-value: 0.000000
+   Statistic: 0.839858
+   Python code: random.uniform(0.000, 770.000)
+
+9. expon
+   Parameters: loc=0.0000, scale=72.1993
+   P-value: 0.000000
+   Statistic: 0.839858
+   Python code: random.expovariate(0.014)
+

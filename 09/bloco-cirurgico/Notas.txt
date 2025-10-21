@@ -1,0 +1,25 @@
+========== Notas ==========
+
+Ajustar o DCA para que ambos, DCA e Modelo, fiquem equivalentes.
+
+Apresentar o passo-a-passo da simulação, ou seja, os eventos, alinhado ao DCA.
+Ainda no passo-a-passo: 
+	Computar as filas: 
+		Número em filas
+		Tempo em filas
+		
+Ao término da simulação:
+	Adicionar as estatísticas:
+		Número médio de pacientes em fila para cada recurso
+		Utilização média de cada recurso: Percentual (%)
+		Número médio de pacientes no sistema
+		
+Apresentar as estatísticas em gráficos.
+
+Apresentar info_coleta_visita.txt (ver o exemplo do grupo da maternidade)
+
+=============================================================================
+Esta foi apenas uma replicação. Uma simulação contém diversas replicações!
+Implementar a simulação computando as médias das replicações e, ao final da 
+simulação, computar as médias das médias das replicações.
+=============================================================================
