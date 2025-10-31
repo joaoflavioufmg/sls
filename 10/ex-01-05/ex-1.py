@@ -97,12 +97,11 @@ imprime_detalhes = True
 ###################################################################
 
 # Unidade básica para todos os tempos: horas
-def distribuicoes(tipo):
-    taxa_chegadas=1         # por hora
-    taxa_operacao=1/(3*24)  # por hora
-    taxa_manutencao=1/24    # por hora
+def distribuicoes(tipo):    
+    taxa_operacao=1/(3*24)  # por hora (1/tempo médio de operação)
+    taxa_manutencao=1/24    # por hora (1/tempo médio de manutenção)
     return {
-        'chegada': expovariate(taxa_chegadas),
+        'chegada': 0,
         'operacao': expovariate(taxa_operacao),
         'manutencao': expovariate(taxa_manutencao)
     }.get(tipo,0.0)
