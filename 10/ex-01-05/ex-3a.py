@@ -104,11 +104,11 @@ tempo_aquecimento = 36000
 
 # Unidade básica para todos os tempos: segundos
 def distribuicoes(tipo):
-    taxa_chegadas=1/4       # por segundo
-    taxa_atendimento=1/120  # por segundo
+    interv_chegadas=1/4       # por segundo
+    interv_atendimento=1/120  # por segundo
     return {
-        'chegada': expovariate(taxa_chegadas),
-        'atendimento': expovariate(taxa_atendimento)
+        'chegada': expovariate(interv_chegadas),
+        'atendimento': expovariate(interv_atendimento)
     }.get(tipo,0.0)
 
 

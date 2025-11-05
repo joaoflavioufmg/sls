@@ -98,12 +98,12 @@ imprime_detalhes = True
 
 # Unidade básica para todos os tempos: horas
 def distribuicoes(tipo):    
-    taxa_operacao=1/(3*24)  # por hora (1/tempo médio de operação)
-    taxa_manutencao=1/24    # por hora (1/tempo médio de manutenção)
+    interv_operacao=1/(3*24)  # por hora (1/tempo médio de operação)
+    interv_manutencao=1/24    # por hora (1/tempo médio de manutenção)
     return {
         'chegada': 0,
-        'operacao': expovariate(taxa_operacao),
-        'manutencao': expovariate(taxa_manutencao)
+        'operacao': expovariate(interv_operacao),
+        'manutencao': expovariate(interv_manutencao)
     }.get(tipo,0.0)
 
 
@@ -113,13 +113,14 @@ def gera_maquinas(env, entidade):
     for i in range(1,4):
         conta_chegada+=1
         nome = entidade + " " + str(conta_chegada)
-        momento_chegada[nome] = env.now        
+        # momento_chegada[nome] = env.now        
         if imprime_detalhes:
             print("{0:.2f}: {1:s} Inicia a operação".format(env.now, nome)) 
         env.process(operacao(env, nome))
 
 
-def operacao (env, nome):    
+def operacao (env, nome):
+    momento_chegada[nome] = env.now        # < Ajuste aqui!    
     # Delay    
     yield env.timeout(distribuicoes('operacao')) 
     if imprime_detalhes:

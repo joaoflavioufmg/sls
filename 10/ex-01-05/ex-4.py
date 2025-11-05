@@ -150,14 +150,14 @@ taxa_carga_navios = 1200 # toneladas por hora
 carga_vagao       = 100  # toneladas por hora    
 
 def distribuicoes(tipo):
-    taxa_chegadas_navios = 1/(4.39*24)  # por hora    
+    interv_chegadas_navios = 1/(4.39*24)  # por hora    
     med_chegada_trem = 7            # horas
     std_chegada_trem = 1.07         # horas
     med_descarga_vagao = 2.5/60     # horas
     std_descarga_vagao = 0.3/60     # horas    
     
     return {
-        'chegada_navio': expovariate(taxa_chegadas_navios),         # horas
+        'chegada_navio': expovariate(interv_chegadas_navios),         # horas
         'chegada_trem': max(0, gauss(med_chegada_trem, std_chegada_trem)),  # horas
         'descarga_vagao': max(0, gauss(med_descarga_vagao, std_descarga_vagao)),  # horas
         'carrega_navio': carga_vagao/taxa_carga_navios              # horas        

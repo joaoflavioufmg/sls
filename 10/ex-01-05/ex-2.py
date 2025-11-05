@@ -24,10 +24,10 @@ CAP_GARCONS, CAP_COPOS = 1, 70
 n_replicacao, duracao_da_simulacao, tempo_aquecimento, imprime_detalhes = 5, 365*12*60, 30*12*60, False
 
 def distribuicoes(tipo):
-    taxa_chegadas, med_servir, std_servir = 1/10, 6/60, 1/60
+    interv_chegadas, med_servir, std_servir = 1/10, 6/60, 1/60
     cte_lavar, min_beber, max_beber = 30/60, 5, 8
     return {
-        'chegada': expovariate(taxa_chegadas),
+        'chegada': expovariate(interv_chegadas),
         'servir': gauss(med_servir, std_servir),
         'lavar': cte_lavar,
         'beber': uniform(min_beber, max_beber)
@@ -41,7 +41,7 @@ def chegada(env, entidade, garcons, copos):
         conta_chegada+=1
         nome = entidade + " " + str(conta_chegada)
         sede = randint(1,4)
-        momento_chegada[nome] = env.now
+        # momento_chegada[nome] = env.now
         if imprime_detalhes:
             print("{0:.2f}: {1:s} chega no bar com sede {2:d}".format(env.now, nome, sede))
         prio = 0
@@ -78,6 +78,7 @@ def lavar(env, nome, garcons, copos):
     env.process(lavar(env, nome, garcons, copos))
 
 def servir(env, nome, prio, garcons, copos, sede):
+    momento_chegada[nome] = env.now        # < Ajuste aqui!    
     momento_entrada_fila[nome] = env.now
     request1=garcons.request(priority=prio)
     request2=copos.request(priority=prio)
@@ -205,7 +206,7 @@ def publica_estatisticas(entidade,tempo):
     print('USO-C:{0:.2f}% \u00B1 {1:.2f}%  (IC 95%)'.format(np.mean(USO_C_bar)*100, calc_ic(USO_C)*100))
     print("="*comprimento_linha, end="\n") 
 
-    if n_replicacoes == 1:
+    if n_replicacao == 1:
         matplotlib.rcParams['figure.figsize'] = (8.0, 6.0)
         matplotlib.style.use('ggplot')
         
@@ -223,7 +224,7 @@ def publica_estatisticas(entidade,tempo):
         plt.ylabel('Valor') 
         plt.show()
 
-for i in range (1,n_replicacoes+1):
+for i in range (1,n_replicacao+1):
 
     conta_chegada = 0    
     conta_saida = 0
