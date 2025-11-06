@@ -44,8 +44,8 @@ import scipy
 import matplotlib
 import matplotlib.pyplot as plt
 
-from random import (expovariate, triangular, gauss, 
-uniform, gammavariate, weibullvariate, randint, random, seed)
+from random import random, seed
+from numpy.random import gamma, weibull, exponential
 
 from scipy import stats
 
@@ -123,13 +123,13 @@ imprime_detalhes = False
 # Unidade básica para todos os tempos: minutos
 
 def distribuicao(tipo):    
-    taxa_mnt_a = 1/88.98 # por minuto
-    return {
-        'chegada': gammavariate(0.96, 7.97)*60,         # minutos        
-        'operacao': gammavariate(0.97, 10.36)*60,       # minutos        
-        'mnt_a': expovariate(taxa_mnt_a),               # minutos
-        'mnt_b': gammavariate(1.03,60.48),              # minutos
-        'inspecao':  weibullvariate(31.05, 1.03)        # minutos 
+    mean_mnt_a = 88.98 # minutos
+    return {        
+        'chegada': gamma(7.97, 1/0.96)*60,         # minutos        
+        'operacao': gamma(10.36, 1/0.97)*60,       # minutos        
+        'mnt_a': exponential(mean_mnt_a),        # minutos
+        'mnt_b': gamma(60.48, 1/1.03),              # minutos
+        'inspecao':  weibull(1.03) * 31.05        # minutos 
     }.get(tipo,0.0)
 
 

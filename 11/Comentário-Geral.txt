@@ -1,0 +1,6 @@
+Caros alunos, avaliei o código e os relatórios do exercício 10b.
+
+Pontos de atenção: 
+	Fazer as replicações conforme o relatório proposto;
+	Analisar os indicadores de desempenho da simulação;
+	Analisar os 5 cenários propostos e fazer a recomendação.

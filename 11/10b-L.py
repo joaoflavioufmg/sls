@@ -19,10 +19,10 @@ N_INTERNAS = 5
 CHEGADAS_EXTERNAS = True
 
 # ==================== Distribuições ====================
-def t_falha_interna():  return np.random.gamma(10.36, 1/0.97) * HOUR
-def t_falha_externa():  return np.random.gamma(7.97, 1/0.96) * HOUR
+def t_falha_interna():  return np.random.gamma(10.36, 0.97) * HOUR
+def t_falha_externa():  return np.random.gamma(7.97, 0.96) * HOUR
 def t_reparo_A():       return random.expovariate(1/88.98)
-def t_reparo_B():       return np.random.gamma(60.48, 1/1.03)
+def t_reparo_B():       return np.random.gamma(60.48, 1.03)
 def t_inspecao():       return np.random.weibull(1.03) * 31.05
 
 P_A = 0.75
