@@ -1,0 +1,33 @@
+https://youtu.be/xMPf5K6AnLo
+
+Bloco cirúrgico
+
+Muitos tempos Triangular. É issmo mesmo? Os tempos foram coletados na TI?
+
+Camila: DCA possui erros com mais setas para apenas uma fila. Erros com atividades com 3 tempos. Mesma atividade para cirurgias diferentes.
+
+
+Naiara: Usa muito a primeira pessoa (eu fiz), para um trabalho em equipe.
+Sugiro usar "nós fizemos".
+
+18:00	Estudar mais o manual da função (python) os parâmtros da distribuição (loc, scale) para garantir que não está usando o parâmetro correto.
+20:00	Tempos entre chegadas exponencial com dois parâmetros?
+26:00	Tempo mínimo ajustado para a realidade (em vez de 10 min).
+35:00	As chamadas para o próximo processo não seriam dentro da função do processo anterior? 
+		E.g.: yield env.process(cirurgia(...))
+		def cirurgia():
+			env.process(conferencia_instrumentos(...)
+
+47:00	Relatório: Estão usando "Taxa", mas o dado é de intervalo. Converta (no relatório apenas) para taxa para ficar mais didátivo. Use a unidade "pacientes/hora", no relatório, apenas.
+
+		As filas estão quase zeradas. É isso mesmo? Foi validado com os gerentes do Risoleta?
+		Tempo médio de paciente emergentes: 5 minutos ?
+		São apenas 5 pacientes no sistema, em média?
+		Utilização 0.35%? 
+		Maioria menos de 1%? Esse hospital está tão ocioso assim? Não é o que dizem!
+
+É preciso uma análise crítica e ajustes. Compare com as entrevistas.
+Não podemos usar o resultado errado com problema nos dados, apenas.
+Em relação ao proposto, os objetivos de simular a realidade não foi cumprido.
+
+Nota: 40%

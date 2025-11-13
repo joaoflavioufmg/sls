@@ -1,0 +1,13 @@
+Modelagem de eventos discretos
+
+Farmácia
+
+https://youtu.be/uHg0WHPoBbE
+
+A apresentação deve ser do DCA, em seguida, do código.
+
+02:00	Estudar mais o manual da função (python) os parâmtros da distribuição gama, weibull, beta, lognormal (loc, scale) para garantir que não está usando o parâmetro correto.
+
+13:00	Uso médio menos de 1%? Tempo em fila de 0.00 minutos?
+
+Nota: 40%

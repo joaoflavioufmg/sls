@@ -1,0 +1,18 @@
+Link vídeo Apresentação:
+
+https://youtu.be/gfDg6LpaAVg?si=etvQGVDq6HDYcCvw
+
+Laboratório
+
+A apresentação deve ser do DCA, em seguida, do código.
+
+A apresentação começa apresentando fatos negativos: "a gente não conseguiu tempos com..."
+
+20:00	A simulação tem baixa duração. Não dá para saber se ela está estável. Se o código está correto. 168 chegadas e 48 saídas, com 120 exames em WIP sugere que a simulação não está estável ainda. O mesmo ocorre com as 5 replicações.
+
+Os tempos estão ok. Validação com usuários. OK.
+
+22:00	Triagista e analista com < 4%. Explicar. Erro na simulaçao. Pela justificativa, o tempo total disponível do triagista e analista tem que ser ajustado.
+
+Nota: 60%
+
