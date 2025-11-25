@@ -1,0 +1,7 @@
+Modelagem da Farmácia com Eventos Discretos
+
+https://youtu.be/TiIV61CpcpM
+
+Nota: 35
+
+Relatório ficou bom, com DCA melhor e boa resolução, mas podia melhorar mais. Sugestões ao executivo ficou vaga, sem propostas numéricas. Alguns "prints" de telas poderiam ser convertidas em tabelas no relatório. Informações numéricas apresentadas na conclusão e recomentações deveriam estar no início também, no relatório executivo.

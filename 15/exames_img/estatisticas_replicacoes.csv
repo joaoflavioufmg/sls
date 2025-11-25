@@ -1,0 +1,2 @@
+Replicacao,Total_Exames_Simulados,Tempo_Medio_Em_Fila,Tempo_Medio_Em_Processamento,Tempo_Medio_No_Sistema,WIP_Final_Instantaneo,WIP_Medio_Ponderado,Numero_Medio_Exames_Em_Fila,Numero_Medio_Exames_Em_Processamento,Numero_Medio_Exames_No_Sistema,Tempo_Warmup
+1,12643,38.42780341952969,259.2454254356042,297.67322885513386,111,87.68791084967542,11.303301250855249,76.3846095988198,87.68791084967542,15000

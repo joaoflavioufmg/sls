@@ -1,0 +1,982 @@
+import simpy
+import random
+import numpy as np
+import scipy
+import matplotlib
+import matplotlib.pyplot as plt
+from random import expovariate, seed
+from scipy import stats
+
+
+seed(1)
+
+# Exames (_E)
+NS_E = []
+NA_E = []
+NF_E = []
+TS_E = []
+TA_E = []
+TF_E = []
+
+USO_T1=[] # Técnico lab1
+USO_T2=[] # Técnico lab2
+USO_TR=[] # Triagista
+USO_A=[] # Analista
+USO_M = [] #Maquina
+
+
+NS_E_bar = []
+NF_E_bar = []
+NA_E_bar = []
+TS_E_bar = []
+TF_E_bar = []
+TA_E_bar = []
+
+USO_T1_bar=[]
+USO_T2_bar=[]
+USO_TR_bar=[]
+USO_A_bar=[]
+USO_M_bar=[]
+
+TT1 = []  # Tempo dos Eventos Discretos: Técnico Lab1
+TT2 = []  # Tempo dos Eventos Discretos: Técnico Lab2
+TT = []  # Tempo dos Eventos Discretos: Triagista
+TA = []  # Tempo dos Eventos Discretos: Analista
+TM = []  # Tempo dos Eventos Discretos: Maquina
+
+
+conta_chegada_exame = 0
+conta_saida_exame = 0
+tempo_utilizacao_Recurso_TecLab1 = 0
+tempo_utilizacao_Recurso_TecLab2 = 0
+tempo_utilizacao_Recurso_Triagista = 0
+tempo_utilizacao_Recurso_Analista = 0
+tempo_utilizacao_Recurso_Maquina = 0
+
+momento_chegada = {}
+momento_saida = {}
+tempo_sistema = {}
+momento_entrada_fila = {}
+momento_saida_fila = {}
+tempo_fila = {}
+inicia_atendimento = {}
+finaliza_atendimento = {}
+duracao_atendimento = {}
+utilizacao = {}
+
+CAP_TECLAB1 = 6
+CAP_TECLAB2 = 3
+CAP_TRIAGISTA = 2
+CAP_ANALISTA = 1
+CAP_MAQUINA = 6
+
+#proporção de urgentes e rotina (56,4% de urgencia e 43,6% de rotina)
+proporcao = {"Urgente": 0.564, "Rotina": 0.436}
+#proporção de adequação (1,16% de inadequados - média de janeiro a setembro)
+proporcao2 = {"Adequado": 0.9884, "Inadequado":0.0116}
+#porporção de criticidade (Da média mensal de exames, 1,38% tem resultados criticos e 98,62% resultados não críticos.)
+proporcao3 = {"Critico": 0.0138, "Nao Critico": 0.9862}
+
+
+###################################################################
+# Configura a rodada de simulacao definindo o
+# numero de replicações e duração da simulação
+###################################################################
+
+###################################################################
+
+
+# Teste
+n_replicacoes = 1
+duracao_da_simulacao = 43200
+#duracao_da_simulacao = 21600
+tempo_aquecimento = 2880
+#tempo_aquecimento = 8640
+imprime_detalhes = True
+
+'''
+###################################################################
+# Simulação oficial
+n_replicacoes = 5
+duracao_da_simulacao =   43200
+tempo_aquecimento = 2880
+imprime_detalhes = False
+###################################################################
+'''
+
+# ==== PARAMETROS DE TEMPO (em minutos) ====
+
+
+def tempo(nome, tipo=None):
+    import random, numpy as np
+
+    if nome == "transporte_lab_leito":
+        return random.triangular(1.815, 27.510, 6.000)
+
+    if nome == "coleta":
+        # mesmo parâmetro para Urgente/Rotina
+        return random.lognormvariate(0.179, 1.618)
+
+    if nome == "entrega":
+        return max(0.3, random.gauss(1.915, 1.857))
+
+    if nome == "transporte":
+      return random.lognormvariate(3.46, 0.61)
+
+    if nome == "triagem":
+        return max(0.16, random.gauss(0.251, 0.106))
+
+    if nome == "processamento_tec_total":
+        return random.lognormvariate(3.5, 0.6)
+
+    if nome == "validacao_clin_total":
+        return random.betavariate(0.757,19.928)
+
+    if nome == "telefonema":
+        return random.expovariate(0.443)
+
+    if nome == "disponibilizacao":
+        return 1.0
+
+    if nome == "nomeacao_potes":
+        return random.uniform(0.5, 2)
+
+    # fallback
+    #return float(TEMPOS[nome]) if not isinstance(TEMPOS[nome], dict) else float(list(TEMPOS[nome].values())[0])
+
+
+def criaChegadas(env, intervalo_medio, tec_lab, proporcao,p_coleta_externa):
+
+    global conta_chegada_exame
+    contaChegadas = 0
+    tipos = list(proporcao.keys())
+    pesos = list(proporcao.values())
+
+    while True:
+        # espera até a próxima chegada (exponencial)
+        #yield env.timeout(random.expovariate(1 / taxa))
+        '''
+        #intervalos_chegada = 1 / intervalo_medio
+        #yield env.timeout(intervalos_chegada)
+        '''
+
+        # chegadas ~ Exponencial(λ = intervalo_medio)
+        yield env.timeout(random.expovariate(intervalo_medio))
+       # yield env.timeout(4.8)
+        conta_chegada_exame += 1
+        contaChegadas += 1
+
+        # escolhe tipo segundo a proporção
+        tipo = random.choices(tipos, weights=pesos, k=1)[0]
+
+        # sorteia se é coleta própria
+        coleta_externa = random.random() < p_coleta_externa
+
+        # nomeia o pedido (podemos mudar pra input() depois)
+        pedido = f"Exame_{contaChegadas}"
+
+        momento_chegada[pedido] = env.now
+
+        if imprime_detalhes:
+          if coleta_externa:
+            print("{0:.2f}: {1:s} chega no Laboratório |Tipo: {2:s} |, Coleta já realizada pelo PACIENTE".format(env.now, pedido,tipo))
+          else:
+            print("{0:.2f}: {1:s} chega no Laboratório |Tipo: {2:s} |, Coleta do LABORATÓRIO".format(env.now, pedido,tipo))
+
+        if coleta_externa:
+            env.process(EntregaAmostra(env, pedido, tipo, triagista))
+        else:
+            env.process(NomeacaoPotes(env, pedido, tipo, tec_lab))
+
+
+def NomeacaoPotes(env, pedido, tipo, tec_lab):
+
+    momento_entrada_fila[pedido] = env.now
+
+    with tec_lab.request() as req:
+        yield req  # aguarda até conseguir o recur
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+          print("{0:.2f}: Técnico inicia a nomeação do {1:s}. |Tipo: {2:s} | Número de entidades em atendimento: {3:d}"
+            .format(env.now, pedido, tipo, tec_lab.count))
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(tec_lab.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+        yield env.timeout(tempo("nomeacao_potes"))
+
+        if imprime_detalhes:
+          print("{0:.2f}: Técnico termina a nomeação do {1:s}. |Tipo: {2:s} |  Número de entidades em fila: {3:d}"
+            .format(env.now, pedido, tipo, len(tec_lab.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(tec_lab.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+            # Release
+
+        global tempo_utilizacao_Recurso_TecLab1
+        tempo_utilizacao_Recurso_TecLab1 += env.now - inicia_utilizacao_Recurso
+        utilizacao['Técnico Lab1'] = tempo_utilizacao_Recurso_TecLab1 / (CAP_TECLAB1*env.now)
+        if env.now > tempo_aquecimento:
+          USO_T1.append(utilizacao['Técnico Lab1'])
+          TT1.append(env.now)
+
+        env.process(TransporteLabParaLeito(env, pedido, tipo, tec_lab))
+
+
+def TransporteLabParaLeito(env, pedido, tipo, tec_lab):
+
+    momento_entrada_fila[pedido] = env.now
+
+    with tec_lab.request() as req:
+        yield req  # aguarda até conseguir o recurso
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+
+          print("{0:.2f}: Técnico inicia o deslocamento para coleta do {1:s}. |Tipo: {2:s} |Número de entidades em atendimento: {3:d}"
+            .format(env.now, pedido, tipo, tec_lab.count))
+
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(tec_lab.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+        yield env.timeout(tempo("transporte_lab_leito"))
+
+        if imprime_detalhes:
+          print("{0:.2f}: Técnico termina o deslocamento até o leito para coleta do {1:s}. |Tipo: {2:s} | Número de entidades em fila: {3:d}"
+            .format(env.now, pedido, tipo, len(tec_lab.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(tec_lab.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+            # Release
+
+        global tempo_utilizacao_Recurso_TecLab1
+        tempo_utilizacao_Recurso_TecLab1 += env.now - inicia_utilizacao_Recurso
+        utilizacao['Técnico Lab1'] = tempo_utilizacao_Recurso_TecLab1 / (CAP_TECLAB1*env.now)
+        if env.now > tempo_aquecimento:
+          USO_T1.append(utilizacao['Técnico Lab1'])
+          TT1.append(env.now)
+
+        env.process(ColetaAmostra(env, pedido, tipo, tec_lab))
+
+
+
+def ColetaAmostra(env, pedido, tipo, tec_lab):
+
+    momento_entrada_fila[pedido] = env.now
+
+    # mapa numérico de prioridade (menor = atende antes)
+    prioridade = {"Urgente": 0, "Rotina": 1}
+    prio = prioridade.get(tipo, 1)
+
+    with tec_lab.request(priority=prio) as req:
+    #with tec_lab.request() as req:
+        yield req  # aguarda até conseguir o recurso
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+          print("{0:.2f}: Coletando {1:s}. |Tipo: {2:s} | Número de entidades em atendimento: {3:d}"
+            .format(env.now, pedido, tipo, tec_lab.count))
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(tec_lab.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+        t = tempo("coleta", tipo)
+        yield env.timeout(t)
+
+        if imprime_detalhes:
+          print("{0:.2f}: Finaliza coleta {1:s}. |Tipo: {2:s} | Número de entidades em fila: {3:d}"
+            .format(env.now, pedido, tipo, len(tec_lab.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(tec_lab.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+            # Release
+
+        global tempo_utilizacao_Recurso_TecLab1
+        tempo_utilizacao_Recurso_TecLab1 += env.now - inicia_utilizacao_Recurso
+        utilizacao['Técnico Lab1'] = tempo_utilizacao_Recurso_TecLab1 / (CAP_TECLAB1*env.now)
+        if env.now > tempo_aquecimento:
+          USO_T1.append(utilizacao['Técnico Lab1'])
+          TT1.append(env.now)
+
+        env.process(Transporte(env,pedido,tec_lab,tipo))
+
+
+def EntregaAmostra(env, pedido, tipo, triagista):
+
+    """
+    Entrega de amostras coletadas pelo próprio paciente.
+    O triagista confere e recebe o material.
+    """
+
+    momento_entrada_fila[pedido] = env.now
+
+    with triagista.request() as req:
+        yield req  # aguarda até conseguir o recur
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+          print("{0:.2f}: Recebendo direto no laboratório o {1:s}. Número de entidades em atendimento: {2:d}"
+            .format(env.now, pedido, triagista.count))
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(triagista.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+        yield env.timeout(tempo("entrega"))
+
+        if imprime_detalhes:
+          print("{0:.2f}: Finaliza recebimento no laboratório do {1:s}. Número de entidades em fila: {2:d}"
+            .format(env.now, pedido, len(triagista.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(triagista.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+            # Release
+
+        global tempo_utilizacao_Recurso_Triagista
+        tempo_utilizacao_Recurso_Triagista += env.now - inicia_utilizacao_Recurso
+        utilizacao['Triagista'] = tempo_utilizacao_Recurso_Triagista / (CAP_TRIAGISTA*env.now)
+        if env.now > tempo_aquecimento:
+          USO_TR.append(utilizacao['Triagista'])
+
+          TT.append(env.now)
+
+        env.process(Processamento_tec(env, pedido, tec_lab2, tipo, maquina))
+
+
+
+def Transporte(env, pedido, tec_lab, tipo):
+
+    momento_entrada_fila[pedido] = env.now
+
+    with tec_lab.request() as req:
+        yield req  # aguarda até conseguir o recurso
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+          print("{0:.2f}: Transportando para o laboratório o  {1:s}. |Tipo: {2:s} | Número de entidades em atendimento: {3:d}"
+            .format(env.now, pedido, tipo, tec_lab.count))
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(tec_lab.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+
+        #ADAPTAÇÃO DE TEMPO PARA QUE A ATIVIDADE REFLITA OS TEMPOS REAIS DE TRANSPORTE
+
+        tempo_sim = tempo("transporte")
+        if tempo_sim > 15:
+          if tempo_sim > 30:
+            yield env.timeout(tempo_sim/5)
+          else:
+            yield env.timeout(tempo_sim/3)
+        else:
+          yield env.timeout(tempo_sim/2)
+
+        #yield env.timeout(tempo("transporte"))
+
+        if imprime_detalhes:
+          print("{0:.2f}: {1:s}. Voltou para o laboratório |Tipo: {2:s} | Número de entidades em fila: {3:d}"
+            .format(env.now, pedido, tipo, len(tec_lab.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(tec_lab.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+            # Release
+
+        global tempo_utilizacao_Recurso_TecLab1
+        tempo_utilizacao_Recurso_TecLab1 += env.now - inicia_utilizacao_Recurso
+        utilizacao['Técnico Lab1'] = tempo_utilizacao_Recurso_TecLab1 / (CAP_TECLAB1*env.now)
+        if env.now > tempo_aquecimento:
+          USO_T1.append(utilizacao['Técnico Lab1'])
+          TT1.append(env.now)
+
+        env.process(Triagem(env, pedido, tipo, triagista))
+
+
+def Triagem(env, pedido, tipo, triagista):
+
+    """
+    Triagem do paciente.
+    """
+
+    momento_entrada_fila[pedido] = env.now
+
+    with triagista.request() as req:
+        yield req  # aguarda até conseguir o recurso
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+          print("{0:.2f}: Iniciando triagem do  {1:s}. - Número de entidades em atendimento: {2:d}"
+            .format(env.now, pedido, triagista.count))
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(triagista.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+        yield env.timeout(tempo("triagem"))
+
+        if imprime_detalhes:
+          print("{0:.2f}: Triagem do {1:s}. finalizada - Número de entidades em fila: {2:d}"
+            .format(env.now, pedido, len(triagista.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(triagista.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+            # Release
+
+        global tempo_utilizacao_Recurso_Triagista
+        tempo_utilizacao_Recurso_Triagista += env.now - inicia_utilizacao_Recurso
+        utilizacao['Triagista'] = tempo_utilizacao_Recurso_Triagista / (CAP_TRIAGISTA*env.now)
+        if env.now > tempo_aquecimento:
+          USO_TR.append(utilizacao['Triagista'])
+
+          TT.append(env.now)
+
+        env.process(Desv3(env, pedido, tipo, tec_lab, tec_lab2))
+
+def Desv3(env, pedido, tipo,tec_lab,tec_lab2):
+    tipos = list(proporcao2.keys())
+    pesos = list(proporcao2.values())
+    resultado = random.choices(tipos, weights=pesos, k=1)[0]
+
+    if resultado == "Adequado":
+      if imprime_detalhes:
+        print(f"{env.now:.1f}: {pedido} classificado como {resultado} → segue para PROCESSAMENTO.")
+      yield env.process(Processamento_tec(env,pedido,tec_lab2, tipo, maquina))
+    else:
+      if imprime_detalhes:
+        print(f"{env.now:.1f}: {pedido} classificado como {resultado} → volta para COLETA.")
+      yield env.process(NomeacaoPotes(env, pedido, tipo, tec_lab))
+
+
+def Processamento_tec(env, pedido, tec_lab2, tipo, maquina):
+
+    momento_entrada_fila[pedido] = env.now
+
+    with tec_lab2.request() as req_tec,  maquina.request() as req_maq:
+    #with tec_lab2.request() as req:
+        yield req_tec & req_maq  # aguarda até conseguir o recurso
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+          print("{0:.2f}: Iniciando processamento técnico do  {1:s}. -  Número de entidades em atendimento: {2:d}"
+            .format(env.now, pedido, tec_lab2.count))
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(tec_lab2.count)
+          #NA_E.append(maquina.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+
+        #ADAPTAÇÃO DE TEMPO NO PROCESSAMENTO TÉCNICO PARA QUE REFLITA OS TEMPOS REAIS
+
+        tempo_sim = tempo ("processamento_tec_total")
+        if tempo_sim > 15:
+          if tempo_sim >= 30:
+            yield env.timeout(tempo_sim/5)
+          else:
+            yield env.timeout(tempo_sim/3)
+        else:
+          if tempo_sim > 5:
+            yield env.timeout(tempo_sim/2)
+          else:
+            yield env.timeout(tempo_sim)
+
+
+        #yield env.timeout(tempo("processamento_tec_total"))
+
+        if imprime_detalhes:
+          print("{0:.2f}: Fim processamento técnico do {1:s}. - Número de entidades em fila: {2:d}"
+            .format(env.now, pedido, len(tec_lab2.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(tec_lab2.queue))
+            #NF_E.append(len(maquina.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+            # Release
+
+        global tempo_utilizacao_Recurso_TecLab2
+        tempo_utilizacao_Recurso_TecLab2 += env.now - inicia_utilizacao_Recurso
+        utilizacao['Técnico Lab2'] = tempo_utilizacao_Recurso_TecLab2 / (CAP_TECLAB2*env.now)
+        if env.now > tempo_aquecimento:
+          USO_T2.append(utilizacao['Técnico Lab2'])
+          TT2.append(env.now)
+
+        global tempo_utilizacao_Recurso_Maquina
+        tempo_utilizacao_Recurso_Maquina += env.now - inicia_utilizacao_Recurso
+        utilizacao['Maquina'] = tempo_utilizacao_Recurso_Maquina / (CAP_MAQUINA*env.now)
+        if env.now > tempo_aquecimento:
+          USO_M.append(utilizacao['Maquina'])
+          TM.append(env.now)
+
+        env.process(Validacao_clinica(env, pedido, analista, tipo))
+
+
+def Validacao_clinica(env, pedido, analista, tipo):
+
+    """
+    Validação clínica realizada pelo analista após o processamento técnico.
+    Verifica resultados e autoriza liberação.
+    """
+    momento_entrada_fila[pedido] = env.now
+
+    with analista.request() as req:
+        yield req  # aguarda até conseguir o recur
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+          print("{0:.2f}: Iniciando validação clinica do  {1:s}. -  Número de entidades em atendimento: {2:d}"
+            .format(env.now, pedido, analista.count))
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(analista.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+        yield env.timeout(tempo("validacao_clin_total"))
+
+        if imprime_detalhes:
+          print("{0:.2f}: Fim validação clinica do {1:s}. - Número de entidades em fila: {2:d}"
+            .format(env.now, pedido, len(analista.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(analista.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+            # Release
+
+        global tempo_utilizacao_Recurso_Analista
+        tempo_utilizacao_Recurso_Analista += env.now - inicia_utilizacao_Recurso
+        utilizacao['Analista'] = tempo_utilizacao_Recurso_Analista / (CAP_ANALISTA*env.now)
+        if env.now > tempo_aquecimento:
+          USO_A.append(utilizacao['Analista'])
+          TA.append(env.now)
+
+        env.process(Desv4(env, pedido, tipo))
+
+
+def Desv4(env, pedido, tipo):
+    tipos = list(proporcao3.keys())
+    pesos = list(proporcao3.values())
+    resultado = random.choices(tipos, weights=pesos, k=1)[0]
+
+    if resultado == "Critico":
+      if imprime_detalhes:
+        print(f"{env.now:.1f}: {pedido} classificado como {resultado} → segue para TELEFONEMA.")
+      yield env.process(Telefonema(env,pedido,analista,tipo))
+      return #Para evitar cair nos próximos ramos
+
+    else:
+      if imprime_detalhes:
+        print(f"{env.now:.1f}: {pedido} classificado como {resultado} → segue para DISPONIBILIZACAO.")
+      yield env.process(Disponibilizacao(env, pedido, tipo))
+      return
+
+
+
+def Disponibilizacao(env,pedido,tipo):
+
+    #ENTIDADE SAI DO SISTEMA
+    global conta_saida_exame
+    conta_saida_exame +=1
+
+    if imprime_detalhes:
+      print(f"{env.now:.1f}: Disponibilizando o {pedido} ({tipo})")
+    yield env.timeout(tempo("disponibilizacao"))
+
+    numero_sistema = conta_chegada_exame - conta_saida_exame
+
+    if env.now > tempo_aquecimento:
+      NS_E.append(numero_sistema)
+
+    momento_saida[pedido] = env.now
+    tempo_sistema[pedido] = momento_saida[pedido] - momento_chegada[pedido]
+
+    if env.now > tempo_aquecimento:
+        TS_E.append(tempo_sistema[pedido])
+
+    if imprime_detalhes:
+     print(f"{env.now:.1f}: {pedido}  foi DISPONIBILIZADO no sistema e saiu do fluxo!")
+
+
+def Telefonema(env,pedido,analista,tipo):
+
+    """
+    Validação clínica realizada pelo analista após o processamento técnico.
+    Verifica resultados e autoriza liberação.
+    """
+    momento_entrada_fila[pedido] = env.now
+
+    with analista.request() as req:
+        yield req  # aguarda até conseguir o recur
+
+        momento_saida_fila[pedido] = env.now
+        tempo_fila[pedido] = momento_saida_fila[pedido] - momento_entrada_fila[pedido]
+        if env.now > tempo_aquecimento:
+            TF_E.append(tempo_fila[pedido])
+
+        if imprime_detalhes:
+          print("{0:.2f}: Iniciando telefonema do {1:s}. -  Número de entidades em atendimento: {2:d}"
+            .format(env.now, pedido, analista.count))
+
+        if env.now > tempo_aquecimento:
+          NA_E.append(analista.count)
+
+        inicia_atendimento[pedido] = env.now
+        inicia_utilizacao_Recurso = env.now
+
+        yield env.timeout(tempo("telefonema"))
+
+        if imprime_detalhes:
+          print("{0:.2f}: Fim telefonema do {1:s}. - Número de entidades em fila: {2:d}"
+            .format(env.now, pedido, len(analista.queue)))
+
+        if env.now > tempo_aquecimento:
+            NF_E.append(len(analista.queue))
+
+        finaliza_atendimento[pedido] = env.now
+        duracao_atendimento[pedido] = finaliza_atendimento[pedido] - inicia_atendimento[pedido]
+
+        if env.now > tempo_aquecimento:
+            TA_E.append(duracao_atendimento[pedido])
+
+
+        # Release
+
+        global tempo_utilizacao_Recurso_Analista
+        tempo_utilizacao_Recurso_Analista += env.now - inicia_utilizacao_Recurso
+        utilizacao['Analista'] = tempo_utilizacao_Recurso_Analista / (CAP_ANALISTA*env.now)
+        if env.now > tempo_aquecimento:
+          USO_A.append(utilizacao['Analista'])
+          TA.append(env.now)
+
+        env.process(Disponibilizacao(env,pedido,tipo))
+
+
+#--------------------MAIN-------------------------
+
+def computa_estatisticas_exame(replicacao, tempo_unidade):
+    # Helpers
+    def safe_mean(L):
+        return float(np.mean(L)) if len(L) else float("nan")
+
+    largura = 92
+    entidade = "exames"
+
+    NS_i  = safe_mean(NS_E)
+    NF_i  = safe_mean(NF_E)
+    NA_i  = safe_mean(NA_E)
+    TS_i  = safe_mean(TS_E)
+    TF_i  = safe_mean(TF_E)
+    TA_i  = safe_mean(TA_E)
+
+    USO_T1_i = safe_mean(USO_T1)
+    USO_T2_i = safe_mean(USO_T2)
+    USO_TR_i = safe_mean(USO_TR)
+    USO_A_i  = safe_mean(USO_A)
+    USO_M_i  = safe_mean(USO_M)
+
+    print("\n" + "="*largura)
+    print(f"{'📊 INDICADORES DE DESEMPENHO – REPLICAÇÃO ' + str(replicacao):^{largura}}")
+    print("="*largura)
+
+    print(f"{'Total de Chegadas:':<38}{conta_chegada_exame:>10d} {entidade}")
+    print(f"{'Total de Saídas:':<38}{conta_saida_exame:>10d} {entidade}")
+    print(f"{'WIP (em progresso):':<38}{(conta_chegada_exame-conta_saida_exame):>10d} {entidade}")
+
+    print("-"*largura)
+    print(f"{'MÉTRICAS DO SISTEMA':^{largura}}")
+    print("-"*largura)
+    print(f"{'NS  (Número no Sistema)':<38}{NS_i:>10.2f} {'exames':<10}")
+    print(f"{'NF  (Número em Fila)':<38}{NF_i:>10.2f} {'exames':<10}")
+    print(f"{'NA  (Número em Atendimento)':<38}{NA_i:>10.2f} {'exames':<10}")
+    print(f"{'TS  (Tempo no Sistema)':<38}{TS_i:>10.2f} {tempo_unidade:<10}")
+    print(f"{'TF  (Tempo de Fila)':<38}{TF_i:>10.2f} {tempo_unidade:<10}")
+    print(f"{'TA  (Tempo de Atendimento)':<38}{TA_i:>10.2f} {tempo_unidade:<10}")
+
+    print("-"*largura)
+    print(f"{'UTILIZAÇÃO DOS RECURSOS':^{largura}}")
+    print("-"*largura)
+    print(f"{'Técnico de Laboratório 1':<38}{USO_T1_i*100:>10.2f}%")
+    print(f"{'Técnico de Laboratório 2':<38}{USO_T2_i*100:>10.2f}%")
+    print(f"{'Triagista':<38}{USO_TR_i*100:>10.2f}%")
+    print(f"{'Analista':<38}{USO_A_i*100:>10.2f}%")
+    print(f"{'Maquina':<38}{USO_M_i*100:>10.2f}%")
+    print("="*largura)
+
+    # salva para consolidação entre replicações
+    NS_E_bar.append(NS_i);   NF_E_bar.append(NF_i);   NA_E_bar.append(NA_i)
+    TS_E_bar.append(TS_i);   TF_E_bar.append(TF_i);   TA_E_bar.append(TA_i)
+    USO_T1_bar.append(USO_T1_i); USO_T2_bar.append(USO_T2_i)
+    USO_TR_bar.append(USO_TR_i); USO_A_bar.append(USO_A_i); USO_M_bar.append(USO_M_i)
+
+
+def calc_ic(lista):
+    """Half-width do IC 95% para a média. Retorna 0 se lista tiver tamanho <=1."""
+    if len(lista) <= 1:
+        return 0.0
+    confidence = 0.95
+    mean_se = stats.sem(lista)                 # erro padrão da média
+    h = mean_se * stats.t.ppf((1 + confidence) / 2., len(lista)-1)
+    return float(h)
+
+def publica_estatisticas(tempo_unidade):
+    # Helpers
+    def safe_mean(L):
+        return float(np.mean(L)) if len(L) else float("nan")
+
+    largura = 92
+    print("\n" + "="*largura)
+    print(f"{'📈  INDICADORES GERAIS DO SISTEMA (MÉDIA POR REPLICAÇÃO)':^{largura}}")
+    print("="*largura)
+
+    entidade = "exames"
+
+    # usar *_bar (agregado por replicação) tanto para média quanto para IC
+    NS_m, NS_h = safe_mean(NS_E_bar), calc_ic(NS_E_bar)
+    NF_m, NF_h = safe_mean(NF_E_bar), calc_ic(NF_E_bar)
+    NA_m, NA_h = safe_mean(NA_E_bar), calc_ic(NA_E_bar)
+    TS_m, TS_h = safe_mean(TS_E_bar), calc_ic(TS_E_bar)
+    TF_m, TF_h = safe_mean(TF_E_bar), calc_ic(TF_E_bar)
+    TA_m, TA_h = safe_mean(TA_E_bar), calc_ic(TA_E_bar)
+
+    U1_m, U1_h = safe_mean(USO_T1_bar)*100, calc_ic(USO_T1_bar)*100
+    U2_m, U2_h = safe_mean(USO_T2_bar)*100, calc_ic(USO_T2_bar)*100
+    UT_m, UT_h = safe_mean(USO_TR_bar)*100, calc_ic(USO_TR_bar)*100
+    UA_m, UA_h = safe_mean(USO_A_bar)*100, calc_ic(USO_A_bar)*100
+    UM_m, UM_h = safe_mean(USO_M_bar)*100, calc_ic(USO_M_bar)*100
+
+
+    # Bloco 1 – métricas de sistema
+    print(f"{'NS  (Número no Sistema)':<45}{NS_m:>8.2f}  ± {NS_h:<8.2f} {entidade} (IC 95%)")
+    print(f"{'NF  (Número em Fila)':<45}{NF_m:>8.2f}  ± {NF_h:<8.2f} {entidade} (IC 95%)")
+    print(f"{'NA  (Número em Atendimento)':<45}{NA_m:>8.2f}  ± {NA_h:<8.2f} {entidade} (IC 95%)")
+    print(f"{'TS  (Tempo no Sistema)':<45}{TS_m:>8.2f}  ± {TS_h:<8.2f} {tempo_unidade} (IC 95%)")
+    print(f"{'TF  (Tempo de Fila)':<45}{TF_m:>8.2f}  ± {TF_h:<8.2f} {tempo_unidade} (IC 95%)")
+    print(f"{'TA  (Tempo de Atendimento)':<45}{TA_m:>8.2f}  ± {TA_h:<8.2f} {tempo_unidade} (IC 95%)")
+
+    print("-"*largura)
+    print(f"{'UTILIZAÇÃO DOS RECURSOS (MÉDIA POR REPLICAÇÃO)':^{largura}}")
+    print("-"*largura)
+    print(f"{'Técnico de Laboratório 1':<45}{U1_m:>8.2f}% ± {U1_h:<8.2f}% (IC 95%)")
+    print(f"{'Técnico de Laboratório 2':<45}{U2_m:>8.2f}% ± {U2_h:<8.2f}% (IC 95%)")
+    print(f"{'Triagista':<45}{UT_m:>8.2f}% ± {UT_h:<8.2f}% (IC 95%)")
+    print(f"{'Analista':<45}{UA_m:>8.2f}% ± {UA_h:<8.2f}% (IC 95%)")
+    print(f"{'Maquina':<45}{UM_m:>8.2f}% ± {UM_h:<8.2f}% (IC 95%)")
+    print("="*largura + "\n")
+
+#################################
+#CRIAR GRAF WARM-UP
+
+    if n_replicacoes == 1:
+        matplotlib.rcParams['figure.figsize'] = (8.0, 6.0)
+        matplotlib.style.use('ggplot')
+
+        # cria os dados do técnico de laboratório 1
+        xi = TT1
+        y = USO_T1
+        # usa a função plot
+        plt.title('Indicador de Desempenho: \n\n' \
+        + "Utilização média do Técnico de laboratório 1")
+        plt.plot(xi, y, marker='o', linestyle='-', color='b', label='Técnicos_1')
+        plt.legend()
+        plt.ylim(0.0,1.0)
+        plt.xlim(0.0,duracao_da_simulacao)
+        plt.xlabel('Tempo (minutos)')
+        plt.ylabel('Valor')
+        plt.show()
+
+        # cria os dados do técnico de laboratório 2
+        xi = TT2
+        y = USO_T2
+        # usa a função plot
+        plt.title('Indicador de Desempenho: \n\n' \
+        + "Utilização média do técnico de laboratório 2")
+        plt.plot(xi, y, marker='o', linestyle='-', color='r', label='Técnicos_2')
+        plt.legend()
+        plt.ylim(0.0,1.0)
+        plt.xlim(0.0,duracao_da_simulacao)
+        plt.xlabel('Tempo (minutos)')
+        plt.ylabel('Valor')
+        plt.show()
+
+        # cria os dados do triagista
+        xi = TT
+        y = USO_TR
+        # usa a função plot
+        plt.title('Indicador de Desempenho: \n\n' \
+        + "Utilização média dos Triagistas")
+        plt.plot(xi, y, marker='o', linestyle='-', color='r', label='Triagistas')
+        plt.legend()
+        plt.ylim(0.0,1.0)
+        plt.xlim(0.0,duracao_da_simulacao)
+        plt.xlabel('Tempo (minutos)')
+        plt.ylabel('Valor')
+        plt.show()
+
+        # cria os dados do analista
+        xi = TA
+        y = USO_A
+        # usa a função plot
+        plt.title('Indicador de Desempenho: \n\n' \
+        + "Utilização média do analista")
+        plt.plot(xi, y, marker='o', linestyle='-', color='r', label='Analista')
+        plt.legend()
+        plt.ylim(0.0,1.0)
+        plt.xlim(0.0,duracao_da_simulacao)
+        plt.xlabel('Tempo (minutos)')
+        plt.ylabel('Valor')
+        plt.show()
+
+        # cria os dados da maquina
+        xi = TM
+        y = USO_M
+        # usa a função plot
+        plt.title('Indicador de Desempenho: \n\n' \
+        + "Utilização média da máquina")
+        plt.plot(xi, y, marker='o', linestyle='-', color='r', label='Maquina')
+        plt.legend()
+        plt.ylim(0.0,1.0)
+        plt.xlim(0.0,duracao_da_simulacao)
+        plt.xlabel('Tempo (minutos)')
+        plt.ylabel('Valor')
+        plt.show()
+
+
+#################################
+
+###################################################################
+for i in range (1,n_replicacoes+1):
+    # Re-inicializacao das estatísticas entre replicações
+    conta_chegada_exame = 0
+    conta_saida_exame = 0
+    tempo_utilizacao_Recurso_TecLab1 = 0
+    tempo_utilizacao_Recurso_TecLab2 = 0
+    tempo_utilizacao_Recurso_Analista = 0
+    tempo_utilizacao_Recurso_Triagista = 0
+    tempo_utilizacao_Recurso_Maquina = 0
+
+    env = simpy.Environment()
+
+    tec_lab = simpy.PriorityResource(env, capacity= CAP_TECLAB1)  # 3 técnicos por plantão
+    tec_lab2 = simpy.PriorityResource(env, capacity=CAP_TECLAB2)  # 3 técnicos por plantão
+    triagista = simpy.PriorityResource(env, capacity=CAP_TRIAGISTA)  # 1 a cada plantão
+    analista = simpy.PriorityResource(env, capacity=CAP_ANALISTA)  # 1 a cada plantão
+    maquina = simpy.PriorityResource(env, capacity=CAP_MAQUINA)  # 1 a cada plantão
+    intervalo_medio = 0.239
+    env.process(criaChegadas(env, intervalo_medio, tec_lab=tec_lab, proporcao=proporcao, p_coleta_externa=0.08))
+    env.run(duracao_da_simulacao)
+    computa_estatisticas_exame(i, "minutos")
+
+publica_estatisticas("minutos")

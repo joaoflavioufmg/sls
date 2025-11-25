@@ -1,0 +1,10 @@
+https://www.youtube.com/watch?v=Ow7hOHy9iHI
+
+Nota: 38.
+
+Trabalho muito bom! Relatório técnico bem explicado, com tabelas de recursos e 
+figuras boas, embora baixa resolução. O relatório executivo tinha (cap=XXX), o que 
+não é uma boa prática para esse tipo de relatório. Os tempos no relatório estão 
+determinísticos. Poderiam apresentar, embora usado no modelo, uma distribuição triangular.
+Os objetivos estão alinhados às queixas apresentadas no SIPOC, o que é muito bom.
+Tabelas com filas e taxas de ocupação deixam o relatório ainda mais profissional.

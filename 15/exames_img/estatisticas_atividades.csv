@@ -1,0 +1,23 @@
+Replicacao_ou_Total,Nome_da_Atividade,Tempo_Medio_Fila_min
+1,01 - Organizar pedidos,1.542229616337203
+1,02 - Avaliar prioridade,2.1495561373045993
+1,03 - Agendar exame,0.7703728339023325
+1,04 - Informar pré-requisitos,1.018670751224854
+1,05 - Preparar paciente,1.7318448011986622
+1,06 - Transportar paciente,41.40447050566557
+1,07 - Avaliação de realização de exame,1.5239786554045467
+1,10 - Realizar exame no hospital,3.472925664185358
+1,12 - Retorno do paciente ao PS,0.5252842869808135
+1,13 - Analisar exame urgente,6.691264970159429
+1,14 - Analisar exame não urgente,28.879388168513415
+Total,01 - Organizar pedidos,1.542229616337203
+Total,02 - Avaliar prioridade,2.1495561373045993
+Total,03 - Agendar exame,0.7703728339023325
+Total,04 - Informar pré-requisitos,1.018670751224854
+Total,05 - Preparar paciente,1.7318448011986622
+Total,06 - Transportar paciente,41.40447050566557
+Total,07 - Avaliação de realização de exame,1.5239786554045467
+Total,10 - Realizar exame no hospital,3.472925664185358
+Total,12 - Retorno do paciente ao PS,0.5252842869808135
+Total,13 - Analisar exame urgente,6.691264970159429
+Total,14 - Analisar exame não urgente,28.879388168513415
